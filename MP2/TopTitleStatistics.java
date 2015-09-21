@@ -19,6 +19,8 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+import TopTitles.TextArrayWritable;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -127,6 +129,17 @@ public class TopTitleStatistics extends Configured implements Tool {
         @Override
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             // TODO
+        	
+        	String line = value.toString();
+        	StringTokenizer tokenizer = new StringTokenizer(line, delimiters);
+        	while (tokenizer.hasMoreTokens()) 
+        	{
+        		String nextToken = tokenizer.nextToken().trim().toLowerCase();
+        		if (!stopWords.contains(nextToken)) 
+        		{
+        			context.write(new Text(nextToken), new IntWritable(1));
+        		}
+        	}
         }
     }
 
@@ -134,12 +147,22 @@ public class TopTitleStatistics extends Configured implements Tool {
         @Override
         public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
             // TODO
+        	
+        	int sum = 0;
+            for (IntWritable val : values) 
+            {
+                sum += val.get();
+            }
+            
+            context.write(key, new IntWritable(sum));
         }
     }
 
     public static class TopTitlesStatMap extends Mapper<Text, Text, NullWritable, TextArrayWritable> {
         Integer N;
         // TODO
+        
+        private TreeSet<Pair<Integer, String>> countToWordMap = new TreeSet<Pair<Integer, String>>();
 
         @Override
         protected void setup(Context context) throws IOException,InterruptedException {
@@ -150,17 +173,36 @@ public class TopTitleStatistics extends Configured implements Tool {
         @Override
         public void map(Text key, Text value, Context context) throws IOException, InterruptedException {
             // TODO
+        	
+        	Integer count = Integer.parseInt(value.toString());
+            String word = key.toString();
+
+            countToWordMap.add(new Pair<Integer, String>(count, word));
+
+            if (countToWordMap.size() > N) 
+            {
+                countToWordMap.remove(countToWordMap.first());
+            }
         }
 
         @Override
         protected void cleanup(Context context) throws IOException, InterruptedException {
             // TODO
+        	
+        	for (Pair<Integer, String> item : countToWordMap) 
+            {
+                String[] strings = {item.second, item.first.toString()};
+                TextArrayWritable val = new TextArrayWritable(strings);
+                context.write(NullWritable.get(), val);
+            }
         }
     }
 
     public static class TopTitlesStatReduce extends Reducer<NullWritable, TextArrayWritable, Text, IntWritable> {
         Integer N;
         // TODO
+        
+        private TreeSet<Pair<Integer, String>> countToWordMap = new TreeSet<Pair<Integer, String>>();
 
         @Override
         protected void setup(Context context) throws IOException,InterruptedException {
@@ -173,6 +215,44 @@ public class TopTitleStatistics extends Configured implements Tool {
             Integer sum, mean, max, min, var;
 
             // TODO
+            
+            for (TextArrayWritable val: values) 
+            {
+                Text[] pair= (Text[]) val.toArray();
+
+                String word = pair[0].toString();
+                Integer count = Integer.parseInt(pair[1].toString());
+
+                countToWordMap.add(new Pair<Integer, String>(count, word));
+
+                if (countToWordMap.size() > N) {
+                    countToWordMap.remove(countToWordMap.first());
+                }
+            }
+            
+            int[] titleCounts = new int[N];
+            int i = 0;
+            sum = 0;
+            for (Pair<Integer, String> item: countToWordMap) 
+            {
+                sum = sum + item.first;
+                titleCounts[i] = item.first;
+                i++;
+            }
+            
+            mean = sum / N;
+            
+            int varSum = 0;
+            for(i = 0; i < N; i++)
+            {
+            	varSum = (titleCounts[i] - mean)*(titleCounts[i] - mean) + varSum;
+            }
+            
+            var = varSum / N;
+            
+            Arrays.sort(titleCounts);
+            min = titleCounts[0];
+            max = titleCounts[N-1];
 
             context.write(new Text("Mean"), new IntWritable(mean));
             context.write(new Text("Sum"), new IntWritable(sum));
