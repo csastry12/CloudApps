@@ -60,13 +60,13 @@ public class OrphanPages extends Configured implements Tool {
     //    	StringTokenizer tokenizer = new StringTokenizer(line, delimiters);
         	String[] tokens = line.split(": | ");
         	
-        	Integer nextToken = Integer.valueOf(tokens[0]);
-        	context.write(new IntWritable(nextToken), new IntWritable(0));
+     //   	Integer nextToken = Integer.valueOf(tokens[0]);
+        	context.write(new Text(tokens[0]), new IntWritable(0));
         	
         	for (int i = 1; i < tokens.length; i++)
         	{
-        		Integer nextToken = Integer.valueOf(tokens[i]);
-        		context.write(new IntWritable(nextToken), new IntWritable(1));
+       // 		Integer nextToken = Integer.valueOf(tokens[i]);
+        		context.write(new Text(tokens[i]), new IntWritable(1));
         	} 	
         }
     }
