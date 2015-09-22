@@ -144,7 +144,7 @@ public class TopPopularLinks extends Configured implements Tool {
         protected void setup(Context context) throws IOException,InterruptedException 
         {
             Configuration conf = context.getConfiguration();
-            this.N = conf.getInt("N", N);
+            this.N = conf.getInt("N", 10);
         }
         
         // TODO
@@ -195,7 +195,7 @@ public class TopPopularLinks extends Configured implements Tool {
         protected void setup(Context context) throws IOException,InterruptedException 
         {
             Configuration conf = context.getConfiguration();
-            this.N = conf.getInt("N", N);
+            this.N = conf.getInt("N", 10);
         }
         
         // TODO
@@ -206,14 +206,14 @@ public class TopPopularLinks extends Configured implements Tool {
             // TODO
         	
         	for (IntArrayWritable val: values) {
-                Integer[] pair= (Integer[]) val.toArray();
+        		IntWritable[] pair = (IntWritable[]) val.toArray();
 
             //    String word = pair[0].toString();
              //   Integer count = Integer.parseInt(pair[1].toString());
                 
                 // store (count, id) from all mappers and sort by count
 
-                countToWordMap.add(new Pair<Integer, Integer>(pair[1], pair[0]));
+                countToWordMap.add(new Pair<Integer, Integer>(pair[1].get(), pair[0].get()));
 
                 if (countToWordMap.size() > N) {
                     countToWordMap.remove(countToWordMap.first());
