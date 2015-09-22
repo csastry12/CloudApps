@@ -1,4 +1,5 @@
 import org.apache.commons.logging.Log;
+
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -18,11 +19,11 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import TopTitles.TextArrayWritable;
+/*import TopTitles.TextArrayWritable;
 import TopTitles.TitleCountMap;
 import TopTitles.TitleCountReduce;
 import TopTitles.TopTitlesMap;
-import TopTitles.TopTitlesReduce;
+import TopTitles.TopTitlesReduce;*/
 
 import java.io.IOException;
 import java.lang.Integer;
