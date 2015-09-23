@@ -88,7 +88,7 @@ public class PopularityLeague extends Configured implements Tool
         {
         	 // TODO
         	
-    		String line = value.toString();
+    		/*String line = value.toString();
     		String[] tokens = line.split(": | ");
 
    // 		Integer nextToken = Integer.valueOf(tokens[0]);
@@ -106,7 +106,12 @@ public class PopularityLeague extends Configured implements Tool
     			{
     				context.write(new IntWritable(Integer.valueOf(nextToken)), new IntWritable(1));
     			}
-    		}
+    		}*/
+    		
+    		for (int i = 0; i < league.size(); i++) 
+        	{
+    			context.write(new IntWritable(Integer.parseInt(league.get(i))), new IntWritable(i));
+        	}
         }
     }
     
@@ -119,16 +124,21 @@ public class PopularityLeague extends Configured implements Tool
     	@Override
         public void reduce(IntWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
         {	
-    		int sum = 0;
+    		/*int sum = 0;
             for (IntWritable val : values) 
             {
                 sum += val.get();
             }
             
-            countToWordMap.put(sum, key.get());
+            countToWordMap.put(sum, key.get());*/
+    		
+    		for (IntWritable val : values) 
+            {
+    			context.write(key, new IntWritable(val.get()));
+            }
         }
     	
-    	@Override
+    	/*@Override
         protected void cleanup(Context context) throws IOException, InterruptedException
         {
             // TODO
@@ -149,6 +159,6 @@ public class PopularityLeague extends Configured implements Tool
     			
     			context.write(new IntWritable(leagueKey), new IntWritable(count));
     		}
-        }
+        }*/
     }
 }
