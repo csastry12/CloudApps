@@ -124,29 +124,29 @@ public class PopularityLeague extends Configured implements Tool
             }
             
             countToWordMap.add(sum, key.get());
-
-            @Override
-            protected void cleanup(Context context) throws IOException, InterruptedException 
-            {
-                // TODO
-            	
-            	for (int i = 0; i < league.size(); i++) 
-            	{
-        			int leagueKey =  Integer.parseInt(league.get(i));
-        			int keyVal = countToWordMap.get(leagueKey);
-        			int count = 0;
-        			
-        			for (Map.Entry entry : countToWordMap.entrySet())
-        			{
-        				if ((Integer) entry.getValue() < keyVal)
-        				{
-        					count++;
-        				}
-        			}
-        			
-        			context.write(new IntWritable(leagueKey), new IntWritable(count));
-        		}
-            }
+        }
+    	
+    	@Override
+        protected void cleanup(Context context) throws IOException, InterruptedException
+        {
+            // TODO
+        	
+        	for (int i = 0; i < league.size(); i++) 
+        	{
+    			int leagueKey =  Integer.parseInt(league.get(i));
+    			int keyVal = countToWordMap.get(leagueKey);
+    			int count = 0;
+    			
+    			for (Map.Entry entry : countToWordMap.entrySet())
+    			{
+    				if ((Integer) entry.getValue() < keyVal)
+    				{
+    					count++;
+    				}
+    			}
+    			
+    			context.write(new IntWritable(leagueKey), new IntWritable(count));
+    		}
         }
     }
 }
