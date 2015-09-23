@@ -151,18 +151,20 @@ public class PopularityLeague extends Configured implements Tool
         {
             // TODO
     		
-    		Map<Integer, Integer> countToWordMapSorted =  sortByComparator(countToWordMap);
+    	//	Map<Integer, Integer> countToWordMapSorted =  sortByComparator(countToWordMap);
         	
         	for (int i = 0; i < league.size(); i++) 
         	{
     			int leagueKey =  Integer.parseInt(league.get(i));
-    			int keyVal = countToWordMapSorted.get(leagueKey);
+    		//	int keyVal = countToWordMapSorted.get(leagueKey);
+    			int keyVal = countToWordMap.get(leagueKey);
     			int count = 0;
     			
     			for (int j = 0; j < league.size(); j++)
     			{
     				int leagueKeyCompare =  Integer.parseInt(league.get(j));
-        			int keyValCompare = countToWordMapSorted.get(leagueKeyCompare);
+        		//	int keyValCompare = countToWordMapSorted.get(leagueKeyCompare);
+    				int keyValCompare = countToWordMap.get(leagueKeyCompare);
     				if (keyValCompare < keyVal)
     				{
     					count++;
