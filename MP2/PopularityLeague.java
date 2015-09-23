@@ -1,4 +1,5 @@
 import org.apache.hadoop.conf.Configuration;
+
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -22,17 +23,130 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 
-public class PopularityLeague extends Configured implements Tool {
+public class PopularityLeague extends Configured implements Tool 
+{
 
     public static void main(String[] args) throws Exception {
         int res = ToolRunner.run(new Configuration(), new PopularityLeague(), args);
         System.exit(res);
     }
-
-    @Override
-    public int run(String[] args) throws Exception {
-        // TODO
-    }
-
+    
     // TODO
+    
+    @Override
+    public int run(String[] args) throws Exception 
+    {
+    	Job job = Job.getInstance(this.getConf(), "Popularity League");
+        job.setOutputKeyClass(IntWritable.class);
+        job.setOutputValueClass(IntWritable.class);
+
+        job.setMapOutputKeyClass(IntWritable.class);
+        job.setMapOutputValueClass(IntWritable.class);
+
+        job.setMapperClass(PopularityLeagueMap.class);
+        job.setReducerClass(PopularityLeagueReduce.class);
+
+        FileInputFormat.setInputPaths(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+
+        job.setJarByClass(PopularityLeague.class);
+        return job.waitForCompletion(true) ? 0 : 1;
+    }
+    
+    public static class PopularityLeagueMap extends Mapper<Object, Text, IntWritable, IntWritable> 
+    {
+        // TODO
+    	
+    	List<String> league;
+
+        @Override
+        protected void setup(Context context) throws IOException,InterruptedException {
+
+            Configuration conf = context.getConfiguration();
+
+            String leaguePath = conf.get("league");
+
+            this.league = Arrays.asList(readHDFSFile(leaguePath, conf).split("\n"));
+        }
+    	
+    	@Override
+        public void map(Object key, Text value, Context context) throws IOException, InterruptedException
+        {
+        	 // TODO
+        	
+    		String line = value.toString();
+    		String[] tokens = line.split(": | ");
+
+   // 		Integer nextToken = Integer.valueOf(tokens[0]);
+    		String nextToken = tokens[0];
+    		if (league.contains(nextToken))
+			{
+    			context.write(new IntWritable(Integer.valueOf(nextToken)), new IntWritable(0));
+			}
+
+    		for (int i = 1; i < tokens.length; i++)
+    		{
+    		//	nextToken = Integer.valueOf(tokens[i]);
+    			nextToken = tokens[i];
+    			if (league.contains(nextToken))
+    			{
+    				context.write(new IntWritable(Integer.valueOf(nextToken)), new IntWritable(1));
+    			}
+    		}
+        }
+    }
+    
+    public static class PopularityLeagueReduce extends Reducer<IntWritable, IntWritable, IntWritable, IntWritable> 
+    {
+        // TODO
+    	
+    	List<String> league;
+    		
+    	private TreeMap<Integer, Integer> countToWordMap = new TreeMap<>();
+    	
+    	@Override
+        protected void setup(Context context) throws IOException,InterruptedException {
+
+            Configuration conf = context.getConfiguration();
+
+            String leaguePath = conf.get("league");
+
+            this.league = Arrays.asList(readHDFSFile(leaguePath, conf).split("\n"));
+        }
+    	
+    	@Override
+        public void reduce(IntWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
+        {	
+    		int sum = 0;
+            for (IntWritable val : values) 
+            {
+                sum += val.get();
+            }
+            
+            countToWordMap.add(sum, key.get());
+
+            @Override
+            protected void cleanup(Context context) throws IOException, InterruptedException 
+            {
+                // TODO
+            	
+            	for (int i = 0; i < league.size(); i++) 
+            	{
+        			int leagueKey =  Integer.parseInt(league.get(i));
+        			int keyVal = countToWordMap.get(leagueKey);
+        			int count = 0;
+        			
+        			for (Map.Entry entry : countToWordMap.entrySet())
+        			{
+        				if ((Integer) entry.getValue() < keyVal)
+        				{
+        					count++;
+        				}
+        			}
+        			
+        			context.write(new IntWritable(leagueKey), new IntWritable(count));
+        		}
+            }
+        }
+    }
 }
