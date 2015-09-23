@@ -67,7 +67,7 @@ public class PopularityLeague extends Configured implements Tool
             everything.append("\n");
         }
         
-        fs.close();
+     //   fs.close();
         return everything.toString();
     }
     
@@ -120,7 +120,7 @@ public class PopularityLeague extends Configured implements Tool
     	
     	List<String> league;
     		
-    	private TreeMap<Integer, Integer> countToWordMap = new TreeMap<>();
+    	private HashMap<Integer, Integer> countToWordMap = new HashMap<>();
     	
     	@Override
         protected void setup(Context context) throws IOException,InterruptedException {
@@ -141,9 +141,9 @@ public class PopularityLeague extends Configured implements Tool
                 sum += val.get();
             }
             
-            countToWordMap.put(sum, key.get());
+            countToWordMap.put(key.get(), sum);
             
-            countToWordMap.remove(countToWordMap.firstEntry());
+     //       countToWordMap.remove(countToWordMap.firstEntry());
         }
     	
     	@Override
@@ -151,22 +151,18 @@ public class PopularityLeague extends Configured implements Tool
         {
             // TODO
     		
-    		HashMap<Integer, Integer> reverseMap = new HashMap<>();
-    		for (Map.Entry entry : countToWordMap.entrySet())
-			{
-    			reverseMap.put((Integer) entry.getValue(), (Integer) entry.getKey());
-			}
+    		Map<Integer, Integer> countToWordMapSorted =  sortByComparator(countToWordMap);
         	
         	for (int i = 0; i < league.size(); i++) 
         	{
     			int leagueKey =  Integer.parseInt(league.get(i));
-    			int keyVal = reverseMap.get(leagueKey);
+    			int keyVal = countToWordMapSorted.get(leagueKey);
     			int count = 0;
     			
     			for (int j = 0; j < league.size(); j++)
     			{
     				int leagueKeyCompare =  Integer.parseInt(league.get(j));
-        			int keyValCompare = reverseMap.get(leagueKeyCompare);
+        			int keyValCompare = countToWordMapSorted.get(leagueKeyCompare);
     				if (keyValCompare < keyVal)
     				{
     					count++;
@@ -176,5 +172,28 @@ public class PopularityLeague extends Configured implements Tool
     			context.write(new IntWritable(leagueKey), new IntWritable(count));
     		}
         }
+    }
+    
+    private static Map sortByComparator(Map unsortMap) 
+    {
+
+        List list = new LinkedList(unsortMap.entrySet());
+
+        // sort list based on comparator
+        Collections.sort(list, new Comparator() {
+            public int compare(Object o1, Object o2) {
+                return ((Comparable) ((Map.Entry) (o2)).getValue())
+                        .compareTo(((Map.Entry) (o1)).getValue());
+            }
+        });
+
+        // put sorted list into map again
+        //LinkedHashMap make sure order in which keys were inserted
+        Map sortedMap = new LinkedHashMap();
+        for (Iterator it = list.iterator(); it.hasNext();) {
+            Map.Entry entry = (Map.Entry) it.next();
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+        return sortedMap;
     }
 }
