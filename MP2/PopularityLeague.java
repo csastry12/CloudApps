@@ -25,7 +25,7 @@ import java.util.*;
 
 public class PopularityLeague extends Configured implements Tool 
 {
-	static List<String> league;
+//	static List<String> league;
 	
     public static void main(String[] args) throws Exception {
         int res = ToolRunner.run(new Configuration(), new PopularityLeague(), args);
@@ -56,7 +56,7 @@ public class PopularityLeague extends Configured implements Tool
     
     public static String readHDFSFile(String path, Configuration conf) throws IOException{
         Path pt=new Path(path);
-        FileSystem fs = FileSystem.get(pt.toUri(), conf);
+        java.nio.file.FileSystem fs = FileSystem.get(pt.toUri(), conf);
         FSDataInputStream file = fs.open(pt);
         BufferedReader buffIn=new BufferedReader(new InputStreamReader(file));
 
@@ -66,12 +66,16 @@ public class PopularityLeague extends Configured implements Tool
             everything.append(line);
             everything.append("\n");
         }
+        
+        fs.close();
         return everything.toString();
     }
     
     public static class PopularityLeagueMap extends Mapper<Object, Text, IntWritable, IntWritable> 
     {
         // TODO
+    	
+    	List<String> league;
     	
         @Override
         protected void setup(Context context) throws IOException,InterruptedException {
@@ -80,7 +84,7 @@ public class PopularityLeague extends Configured implements Tool
 
             String leaguePath = conf.get("league");
 
-            league = Arrays.asList(readHDFSFile(leaguePath, conf).split("\n"));
+            this.league = Arrays.asList(readHDFSFile(leaguePath, conf).split("\n"));
         }
     	
     	@Override
@@ -88,7 +92,7 @@ public class PopularityLeague extends Configured implements Tool
         {
         	 // TODO
         	
-    		/*String line = value.toString();
+    		String line = value.toString();
     		String[] tokens = line.split(": | ");
 
    // 		Integer nextToken = Integer.valueOf(tokens[0]);
@@ -106,39 +110,46 @@ public class PopularityLeague extends Configured implements Tool
     			{
     				context.write(new IntWritable(Integer.valueOf(nextToken)), new IntWritable(1));
     			}
-    		}*/
-    		
-    		for (int i = 0; i < league.size(); i++) 
-        	{
-    			context.write(new IntWritable(Integer.parseInt(league.get(i))), new IntWritable(i));
-        	}
+    		}
         }
     }
     
     public static class PopularityLeagueReduce extends Reducer<IntWritable, IntWritable, IntWritable, IntWritable> 
     {
         // TODO
+    	
+    	List<String> league;
     		
     	private TreeMap<Integer, Integer> countToWordMap = new TreeMap<>();
     	
     	@Override
+        protected void setup(Context context) throws IOException,InterruptedException {
+
+            Configuration conf = context.getConfiguration();
+
+            String leaguePath = conf.get("league");
+
+            this.league = Arrays.asList(readHDFSFile(leaguePath, conf).split("\n"));
+        }
+    	
+    	@Override
         public void reduce(IntWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
         {	
-    		/*int sum = 0;
+    		int sum = 0;
             for (IntWritable val : values) 
             {
                 sum += val.get();
             }
             
-            countToWordMap.put(sum, key.get());*/
-    		
-    		for (IntWritable val : values) 
+            countToWordMap.put(sum, key.get());
+            
+            if (countToWordMap.size() > 16) 
             {
-    			context.write(key, new IntWritable(val.get()));
+                countToWordMap.remove(countToWordMap.firstEntry());
             }
         }
     	
-    	/*@Override
+    	@Override
         protected void cleanup(Context context) throws IOException, InterruptedException
         {
             // TODO
@@ -159,6 +170,6 @@ public class PopularityLeague extends Configured implements Tool
     			
     			context.write(new IntWritable(leagueKey), new IntWritable(count));
     		}
-        }*/
+        }
     }
 }
