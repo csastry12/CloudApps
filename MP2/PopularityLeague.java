@@ -155,7 +155,7 @@ public class PopularityLeague extends Configured implements Tool
         	
         	for (int i = 0; i < league.size(); i++) 
         	{
-    			int leagueKey =  Integer.parseInt(league.get(i));
+    			/*int leagueKey =  Integer.parseInt(league.get(i));
     		//	int keyVal = countToWordMapSorted.get(leagueKey);
     			int keyVal = countToWordMap.get(leagueKey);
     			int count = 0;
@@ -171,8 +171,15 @@ public class PopularityLeague extends Configured implements Tool
     				}
     			}
     			
-    			context.write(new IntWritable(leagueKey), new IntWritable(count));
+    			context.write(new IntWritable(leagueKey), new IntWritable(count));*/
+        		
+        		context.write(new IntWritable(Integer.parseInt(league.get(i))), new IntWritable(1));
     		}
+        	
+        	for (Map.Entry entry : countToWordMap.entrySet())
+            {
+        		context.write(new IntWritable((Integer) entry.getKey()), new IntWritable((Integer) entry.getKey()));
+            }
         }
     }
     
