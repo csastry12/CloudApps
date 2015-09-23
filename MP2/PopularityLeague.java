@@ -53,6 +53,21 @@ public class PopularityLeague extends Configured implements Tool
         return job.waitForCompletion(true) ? 0 : 1;
     }
     
+    public static String readHDFSFile(String path, Configuration conf) throws IOException{
+        Path pt=new Path(path);
+        FileSystem fs = FileSystem.get(pt.toUri(), conf);
+        FSDataInputStream file = fs.open(pt);
+        BufferedReader buffIn=new BufferedReader(new InputStreamReader(file));
+
+        StringBuilder everything = new StringBuilder();
+        String line;
+        while( (line = buffIn.readLine()) != null) {
+            everything.append(line);
+            everything.append("\n");
+        }
+        return everything.toString();
+    }
+    
     public static class PopularityLeagueMap extends Mapper<Object, Text, IntWritable, IntWritable> 
     {
         // TODO
@@ -123,7 +138,7 @@ public class PopularityLeague extends Configured implements Tool
                 sum += val.get();
             }
             
-            countToWordMap.add(sum, key.get());
+            countToWordMap.put(sum, key.get());
         }
     	
     	@Override
