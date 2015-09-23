@@ -25,7 +25,8 @@ import java.util.*;
 
 public class PopularityLeague extends Configured implements Tool 
 {
-
+	static List<String> league;
+	
     public static void main(String[] args) throws Exception {
         int res = ToolRunner.run(new Configuration(), new PopularityLeague(), args);
         System.exit(res);
@@ -72,8 +73,6 @@ public class PopularityLeague extends Configured implements Tool
     {
         // TODO
     	
-    	List<String> league;
-
         @Override
         protected void setup(Context context) throws IOException,InterruptedException {
 
@@ -81,7 +80,7 @@ public class PopularityLeague extends Configured implements Tool
 
             String leaguePath = conf.get("league");
 
-            this.league = Arrays.asList(readHDFSFile(leaguePath, conf).split("\n"));
+            league = Arrays.asList(readHDFSFile(leaguePath, conf).split("\n"));
         }
     	
     	@Override
@@ -114,20 +113,8 @@ public class PopularityLeague extends Configured implements Tool
     public static class PopularityLeagueReduce extends Reducer<IntWritable, IntWritable, IntWritable, IntWritable> 
     {
         // TODO
-    	
-    	List<String> league;
     		
     	private TreeMap<Integer, Integer> countToWordMap = new TreeMap<>();
-    	
-    	@Override
-        protected void setup(Context context) throws IOException,InterruptedException {
-
-            Configuration conf = context.getConfiguration();
-
-            String leaguePath = conf.get("league");
-
-            this.league = Arrays.asList(readHDFSFile(leaguePath, conf).split("\n"));
-        }
     	
     	@Override
         public void reduce(IntWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
