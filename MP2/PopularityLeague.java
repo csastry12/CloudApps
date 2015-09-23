@@ -56,7 +56,7 @@ public class PopularityLeague extends Configured implements Tool
     
     public static String readHDFSFile(String path, Configuration conf) throws IOException{
         Path pt=new Path(path);
-        java.nio.file.FileSystem fs = FileSystem.get(pt.toUri(), conf);
+        FileSystem fs = FileSystem.get(pt.toUri(), conf);
         FSDataInputStream file = fs.open(pt);
         BufferedReader buffIn=new BufferedReader(new InputStreamReader(file));
 
@@ -143,26 +143,31 @@ public class PopularityLeague extends Configured implements Tool
             
             countToWordMap.put(sum, key.get());
             
-            if (countToWordMap.size() > 16) 
-            {
-                countToWordMap.remove(countToWordMap.firstEntry());
-            }
+            countToWordMap.remove(countToWordMap.firstEntry());
         }
     	
     	@Override
         protected void cleanup(Context context) throws IOException, InterruptedException
         {
             // TODO
+    		
+    		HashMap<Integer, Integer> reverseMap = new HashMap<>();
+    		for (Map.Entry entry : countToWordMap.entrySet())
+			{
+    			reverseMap.put((Integer) entry.getValue(), (Integer) entry.getKey());
+			}
         	
         	for (int i = 0; i < league.size(); i++) 
         	{
     			int leagueKey =  Integer.parseInt(league.get(i));
-    			int keyVal = countToWordMap.get(leagueKey);
+    			int keyVal = reverseMap.get(leagueKey);
     			int count = 0;
     			
-    			for (Map.Entry entry : countToWordMap.entrySet())
+    			for (int j = 0; j < league.size(); j++)
     			{
-    				if ((Integer) entry.getValue() < keyVal)
+    				int leagueKeyCompare =  Integer.parseInt(league.get(j));
+        			int keyValCompare = reverseMap.get(leagueKeyCompare);
+    				if (keyValCompare < keyVal)
     				{
     					count++;
     				}
