@@ -113,7 +113,11 @@ public class FileReaderSpout implements IRichSpout
 
     ------------------------------------------------- */
 	  
-	  fileReader.close();
+	   try 
+	  {
+		  fileReader.close();
+      } 
+	  catch (IOException e1) {  e1.printStackTrace();  }
 
   }
 
