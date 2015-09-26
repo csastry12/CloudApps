@@ -85,7 +85,7 @@ public class FileReaderSpout implements IRichSpout
               * By each line emmit a new value with the line as a their
               */
         	 
-             this.collector.emit(new Values(str));
+             this._collector.emit(new Values(str));
          }
      }
      catch(Exception e)
