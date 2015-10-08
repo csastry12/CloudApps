@@ -1,4 +1,5 @@
 import org.apache.giraph.graph.BasicComputation;
+
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.IntWritable;
@@ -12,19 +13,71 @@ import java.io.IOException;
  * identifier" (the smallest vertex id in the component).
  */
 public class ConnectedComponentsComputation extends
-    BasicComputation<IntWritable, IntWritable, NullWritable, IntWritable> {
-  /**
-   * Propagates the smallest vertex id to all neighbors. Will always choose to
-   * halt and only reactivate if a smaller id has been sent to it.
-   *
-   * @param vertex Vertex
-   * @param messages Iterator of messages from the previous superstep.
-   * @throws IOException
-   */
-  @Override
-  public void compute(
-      Vertex<IntWritable, IntWritable, NullWritable> vertex,
-      Iterable<IntWritable> messages) throws IOException {
-      //TODO
-  }
+    BasicComputation<IntWritable, IntWritable, NullWritable, IntWritable> 
+{
+	/**
+	 * Propagates the smallest vertex id to all neighbors. Will always choose to
+	 * halt and only reactivate if a smaller id has been sent to it.
+	 *
+	 * @param vertex Vertex
+	 * @param messages Iterator of messages from the previous superstep.
+	 * @throws IOException
+	 */
+	@Override
+	public void compute(Vertex<IntWritable, IntWritable, NullWritable> vertex, 
+			Iterable<IntWritable> messages) throws IOException 
+	{
+		int currentComponent = vertex.getValue().get();
+
+		if (getSuperstep() == 0) 
+		{
+			for (Edge<IntWritable, NullWritable> edge : vertex.getEdges()) 
+			{
+				int neighbor = edge.getTargetVertexId().get();
+				if (neighbor < currentComponent) 
+				{
+					currentComponent = neighbor;
+				}
+			}
+
+			// Only need to send value if it is not the own id
+			if (currentComponent != vertex.getValue().get()) 
+			{
+				vertex.setValue(new IntWritable(currentComponent));
+				for (Edge<IntWritable, NullWritable> edge : vertex.getEdges()) 
+				{
+					IntWritable neighbor = edge.getTargetVertexId();
+					if (neighbor.get() > currentComponent) 
+					{
+						sendMessage(neighbor, vertex.getValue());
+					}
+				}
+			}
+
+			vertex.voteToHalt();
+			return;
+		}
+		
+		boolean changed = false;
+	    
+	    // did we get a smaller id when receiving a message?
+	    
+		for (IntWritable message : messages) 
+		{
+			int candidateComponent = message.get();
+			if (candidateComponent < currentComponent) 
+			{
+				currentComponent = candidateComponent;
+				changed = true;
+			}
+		}
+		
+		if (changed) 
+	    {
+	      vertex.setValue(new IntWritable(currentComponent));
+	      sendMessageToAllEdges(vertex, vertex.getValue());
+	    }
+		
+	    vertex.voteToHalt();
+	}
 }
