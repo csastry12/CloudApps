@@ -14,9 +14,6 @@ import org.apache.spark.mllib.clustering.KMeansModel;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 
-import KMeansExample.ClusterCars;
-import KMeansExample.ParsePoint;
-import KMeansExample.ParseTitle;
 import scala.Tuple2;
 
 
@@ -45,9 +42,7 @@ public final class KMeansMP
         JavaSparkContext sc = new JavaSparkContext(sparkConf);
 
         //TODO
-        
-        SparkConf sparkConf = new SparkConf().setAppName("KMeansMP");
-        JavaSparkContext sc = new JavaSparkContext(sparkConf);
+      
         JavaRDD<String> lines = sc.textFile(inputFile);
         
         JavaRDD<Vector> points = lines.map(new ParsePoint());
