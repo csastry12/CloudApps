@@ -38,7 +38,7 @@ public final class RandomForestMP
         }
     }
 	
-	private static class DataToPoint1 implements Function<String, LabeledPoint> 
+	private static class DataToPoint1 implements Function<String, Vector> 
 	{
         private static final Pattern SPACE = Pattern.compile(",");
 
@@ -53,6 +53,7 @@ public final class RandomForestMP
             }
             
             return Vectors.dense(point);
+        }
     }
 
     public static void main(String[] args) 
@@ -84,7 +85,7 @@ public final class RandomForestMP
 		// TODO
         
         JavaRDD<LabeledPoint> train = sc.textFile(training_data_path).map(new DataToPoint());
-        JavaRDD<LabeledPoint> test = sc.textFile(training_data_path).map(new DataToPoint1());
+        JavaRDD<Vector> test = sc.textFile(test_data_path).map(new DataToPoint1());
         
         model = RandomForest.trainClassifier(train, numClasses, categoricalFeaturesInfo, numTrees, 
         		featureSubsetStrategy,impurity,maxDepth,maxBins, seed);
