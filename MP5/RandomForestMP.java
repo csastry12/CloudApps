@@ -10,7 +10,7 @@ import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.regression.LabeledPoint;
 import org.apache.spark.mllib.tree.model.RandomForestModel;
 
-import NaiveBayesExample.DataToPoint;
+// import NaiveBayesExample.DataToPoint;
 
 import org.apache.spark.mllib.tree.RandomForest;
 
@@ -36,6 +36,23 @@ public final class RandomForestMP
             
             return new LabeledPoint(label, Vectors.dense(point));
         }
+    }
+	
+	private static class DataToPoint1 implements Function<String, LabeledPoint> 
+	{
+        private static final Pattern SPACE = Pattern.compile(",");
+
+        public Vector call(String line) throws Exception 
+        {
+            String[] tok = SPACE.split(line);
+            double[] point = new double[tok.length-1];
+            
+            for (int i = 0; i < tok.length - 1; i++) 
+            {
+                point[i] = Double.parseDouble(tok[i]);
+            }
+            
+            return Vectors.dense(point);
     }
 
     public static void main(String[] args) 
@@ -67,7 +84,7 @@ public final class RandomForestMP
 		// TODO
         
         JavaRDD<LabeledPoint> train = sc.textFile(training_data_path).map(new DataToPoint());
-        JavaRDD<LabeledPoint> test = sc.textFile(training_data_path).map(new DataToPoint());
+        JavaRDD<LabeledPoint> test = sc.textFile(training_data_path).map(new DataToPoint1());
         
         model = RandomForest.trainClassifier(train, numClasses, categoricalFeaturesInfo, numTrees, 
         		featureSubsetStrategy,impurity,maxDepth,maxBins, seed);
@@ -79,7 +96,10 @@ public final class RandomForestMP
                 return new LabeledPoint(model.predict(points), points);
             }
         });
+        
+       
 
+        
         results.saveAsTextFile(results_path);
 
         sc.stop();
